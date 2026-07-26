@@ -113,12 +113,17 @@ function App() {
   return (
     <div className="app-shell">
       <header className="hero">
-        <p className="eyebrow">Yelp-style local discovery demo</p>
+        <div className="hero-badge">Yelp-style local discovery demo</div>
         <h1>Project Yelp Clone</h1>
-        <p>
+        <p className="hero-copy">
           Browse dummy listings for restaurants, movies, shops, and schools. This React frontend is
           prepared for an eventual AWS backend.
         </p>
+        <div className="hero-metrics" aria-label="Dataset highlights">
+          <span>{listings.length} listings</span>
+          <span>{categories.length - 1} categories</span>
+          <span>Dummy local dataset</span>
+        </div>
       </header>
 
       <section className="panel controls-panel">
@@ -152,12 +157,13 @@ function App() {
       <section className="panel">
         <div className="results-head">
           <h2>Listings</h2>
-          <span>{filteredListings.length} results</span>
+          <span className="results-count">{filteredListings.length} results</span>
         </div>
 
         <div className="grid">
           {filteredListings.map((item) => (
             <article key={item.id} className="card">
+              <p className="card-category">{item.category}</p>
               <div className="card-top">
                 <h3>{item.name}</h3>
                 <span className="price">{item.price}</span>
@@ -177,7 +183,7 @@ function App() {
       </section>
 
       <section className="panel split">
-        <article>
+        <article className="detail-block">
           <h3>Dummy data sources</h3>
           <ul>
             <li>local_listings_seed.json</li>
@@ -185,7 +191,7 @@ function App() {
             <li>category_rankings_demo.parquet</li>
           </ul>
         </article>
-        <article>
+        <article className="detail-block">
           <h3>AWS backend roadmap</h3>
           <ul>
             <li>API Gateway + Lambda query endpoints</li>
