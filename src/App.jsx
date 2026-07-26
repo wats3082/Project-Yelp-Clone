@@ -1,29 +1,176 @@
+import { useMemo, useState } from 'react'
 import './App.css'
 
-const movies = [
-  { title: 'Zero-Day Protocol', score: 4.8, reviews: 1390 },
-  { title: 'Cloudwatch Nights', score: 4.4, reviews: 820 },
-  { title: 'Incident Response', score: 4.7, reviews: 1142 },
+const listings = [
+  {
+    id: 'rest_1',
+    name: 'Copper Spoon Grill',
+    category: 'restaurants',
+    rating: 4.7,
+    reviews: 1238,
+    location: 'Phoenix, AZ',
+    price: '$$',
+    tags: ['Steakhouse', 'Family Friendly'],
+  },
+  {
+    id: 'rest_2',
+    name: 'Lotus Noodle Bar',
+    category: 'restaurants',
+    rating: 4.5,
+    reviews: 872,
+    location: 'Tempe, AZ',
+    price: '$',
+    tags: ['Thai', 'Late Night'],
+  },
+  {
+    id: 'mov_1',
+    name: 'Sunset Cinema Complex',
+    category: 'movies',
+    rating: 4.6,
+    reviews: 1044,
+    location: 'Scottsdale, AZ',
+    price: '$$',
+    tags: ['IMAX', 'Recliner Seating'],
+  },
+  {
+    id: 'mov_2',
+    name: 'Indie House Theater',
+    category: 'movies',
+    rating: 4.4,
+    reviews: 519,
+    location: 'Mesa, AZ',
+    price: '$',
+    tags: ['Arthouse', 'Film Festivals'],
+  },
+  {
+    id: 'shop_1',
+    name: 'Desert Tech Market',
+    category: 'shops',
+    rating: 4.3,
+    reviews: 768,
+    location: 'Gilbert, AZ',
+    price: '$$$',
+    tags: ['Electronics', 'Repair Desk'],
+  },
+  {
+    id: 'shop_2',
+    name: 'Heritage Book Loft',
+    category: 'shops',
+    rating: 4.8,
+    reviews: 634,
+    location: 'Chandler, AZ',
+    price: '$$',
+    tags: ['Books', 'Community Events'],
+  },
+  {
+    id: 'school_1',
+    name: 'North Valley STEM Academy',
+    category: 'schools',
+    rating: 4.6,
+    reviews: 448,
+    location: 'Glendale, AZ',
+    price: 'Public',
+    tags: ['STEM', 'College Prep'],
+  },
+  {
+    id: 'school_2',
+    name: 'Summit Preparatory School',
+    category: 'schools',
+    rating: 4.5,
+    reviews: 391,
+    location: 'Peoria, AZ',
+    price: 'Private',
+    tags: ['AP Curriculum', 'Sports'],
+  },
+]
+
+const categories = [
+  { id: 'all', label: 'All' },
+  { id: 'restaurants', label: 'Restaurants' },
+  { id: 'movies', label: 'Movies' },
+  { id: 'shops', label: 'Shops' },
+  { id: 'schools', label: 'Schools' },
 ]
 
 function App() {
+  const [activeCategory, setActiveCategory] = useState('all')
+  const [search, setSearch] = useState('')
+
+  const filteredListings = useMemo(() => {
+    return listings.filter((item) => {
+      const categoryMatch = activeCategory === 'all' || item.category === activeCategory
+      const searchValue = search.trim().toLowerCase()
+      const searchMatch =
+        !searchValue ||
+        item.name.toLowerCase().includes(searchValue) ||
+        item.location.toLowerCase().includes(searchValue) ||
+        item.tags.join(' ').toLowerCase().includes(searchValue)
+
+      return categoryMatch && searchMatch
+    })
+  }, [activeCategory, search])
+
   return (
     <div className="app-shell">
       <header className="hero">
-        <p className="eyebrow">React demo</p>
-        <h1>Movie Review Database</h1>
-        <p>Dummy review catalog with summary metrics and an AWS-ready architecture path.</p>
-        <p className="standard-note">Project standard UI shell</p>
+        <p className="eyebrow">Yelp-style local discovery demo</p>
+        <h1>Project Yelp Clone</h1>
+        <p>
+          Browse dummy listings for restaurants, movies, shops, and schools. This React frontend is
+          prepared for an eventual AWS backend.
+        </p>
       </header>
 
+      <section className="panel controls-panel">
+        <div className="search-wrap">
+          <label htmlFor="listing-search">Search</label>
+          <input
+            id="listing-search"
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by name, location, or tags"
+          />
+        </div>
+
+        <div className="category-tabs" role="tablist" aria-label="Listing categories">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === category.id}
+              className={`tab-btn ${activeCategory === category.id ? 'active' : ''}`}
+              onClick={() => setActiveCategory(category.id)}
+            >
+              {category.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="panel">
-        <h2>Top rated this week</h2>
+        <div className="results-head">
+          <h2>Listings</h2>
+          <span>{filteredListings.length} results</span>
+        </div>
+
         <div className="grid">
-          {movies.map((movie) => (
-            <article key={movie.title} className="card">
-              <h3>{movie.title}</h3>
-              <p>Score: {movie.score}/5</p>
-              <p>{movie.reviews.toLocaleString()} reviews</p>
+          {filteredListings.map((item) => (
+            <article key={item.id} className="card">
+              <div className="card-top">
+                <h3>{item.name}</h3>
+                <span className="price">{item.price}</span>
+              </div>
+              <p className="meta">{item.location}</p>
+              <p className="meta">
+                <strong>{item.rating}</strong> stars · {item.reviews.toLocaleString()} reviews
+              </p>
+              <div className="tags">
+                {item.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
             </article>
           ))}
         </div>
@@ -33,17 +180,18 @@ function App() {
         <article>
           <h3>Dummy data sources</h3>
           <ul>
-            <li>movie_metadata.json</li>
-            <li>review_events.csv</li>
-            <li>genre_heatmap_snapshot.parquet</li>
+            <li>local_listings_seed.json</li>
+            <li>review_activity_snapshot.csv</li>
+            <li>category_rankings_demo.parquet</li>
           </ul>
         </article>
         <article>
           <h3>AWS backend roadmap</h3>
           <ul>
-            <li>API Gateway + Lambda review service</li>
-            <li>DynamoDB for movies/reviews</li>
-            <li>SQS/EventBridge for async moderation</li>
+            <li>API Gateway + Lambda query endpoints</li>
+            <li>DynamoDB for listings and review aggregates</li>
+            <li>OpenSearch for text search and ranking</li>
+            <li>S3 + EventBridge for data ingestion pipelines</li>
           </ul>
         </article>
       </section>
