@@ -120,7 +120,7 @@ function App() {
 
       return categoryMatch && searchMatch
     })
-  }, [activeCategory, search])
+  }, [listings, activeCategory, search])
 
   const handleFormChange = (event) => {
     const { name, value } = event.target
