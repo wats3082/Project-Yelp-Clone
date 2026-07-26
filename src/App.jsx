@@ -138,6 +138,10 @@ function App() {
     setErrorMessage('')
   }
 
+  const handleOpenAbout = () => {
+    setActiveView('about')
+  }
+
   const handleSubmit = (event) => {
     event.preventDefault()
 
@@ -221,198 +225,216 @@ function App() {
           >
             Add Entry
           </button>
+          <button
+            type="button"
+            className={`view-btn ${activeView === 'about' ? 'active' : ''}`}
+            onClick={handleOpenAbout}
+          >
+            About
+          </button>
         </nav>
       </header>
 
       <main className="scroll-content">
-      {activeView === 'listings' ? (
-        <>
-          <section className="panel controls-panel">
-            <div className="search-wrap">
-              <label htmlFor="listing-search">Search</label>
-              <input
-                id="listing-search"
-                type="text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search by name, location, or tags"
-              />
-            </div>
+        {activeView === 'listings' && (
+          <>
+            <section className="panel controls-panel">
+              <div className="search-wrap">
+                <label htmlFor="listing-search">Search</label>
+                <input
+                  id="listing-search"
+                  type="text"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search by name, location, or tags"
+                />
+              </div>
 
-            <div className="category-tabs" role="tablist" aria-label="Listing categories">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeCategory === category.id}
-                  className={`tab-btn ${activeCategory === category.id ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(category.id)}
-                >
-                  {category.label}
-                </button>
-              ))}
-            </div>
-          </section>
+              <div className="category-tabs" role="tablist" aria-label="Listing categories">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeCategory === category.id}
+                    className={`tab-btn ${activeCategory === category.id ? 'active' : ''}`}
+                    onClick={() => setActiveCategory(category.id)}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          <section className="panel">
+            <section className="panel">
+              <div className="results-head">
+                <h2>Listings</h2>
+                <span className="results-count">{filteredListings.length} results</span>
+              </div>
+
+              {saveMessage ? <p className="status-message">{saveMessage}</p> : null}
+
+              <div className="grid">
+                {filteredListings.map((item) => (
+                  <article key={item.id} className="card">
+                    <p className="card-category">{item.category}</p>
+                    <div className="card-top">
+                      <h3>{item.name}</h3>
+                      <span className="price">{item.price}</span>
+                    </div>
+                    <p className="meta meta-location">{item.location}</p>
+                    <p className="meta meta-rating">
+                      <strong>{item.rating}</strong> stars · {item.reviews.toLocaleString()} reviews
+                    </p>
+                    {item.review ? <p className="card-review">{item.review}</p> : null}
+                    <div className="tags">
+                      {item.tags.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeView === 'add-new' && (
+          <section className="panel add-new-panel">
             <div className="results-head">
-              <h2>Listings</h2>
-              <span className="results-count">{filteredListings.length} results</span>
+              <h2>Add Entry</h2>
+              <span className="results-count">Create business/review entry</span>
             </div>
 
-            {saveMessage ? <p className="status-message">{saveMessage}</p> : null}
+            <form className="add-form" onSubmit={handleSubmit} noValidate>
+              <label className="form-field" htmlFor="add-name">
+                Name *
+                <input
+                  id="add-name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  placeholder="Business name"
+                  required
+                />
+              </label>
 
-            <div className="grid">
-              {filteredListings.map((item) => (
-                <article key={item.id} className="card">
-                  <p className="card-category">{item.category}</p>
-                  <div className="card-top">
-                    <h3>{item.name}</h3>
-                    <span className="price">{item.price}</span>
-                  </div>
-                  <p className="meta meta-location">{item.location}</p>
-                  <p className="meta meta-rating">
-                    <strong>{item.rating}</strong> stars · {item.reviews.toLocaleString()} reviews
-                  </p>
-                  {item.review ? <p className="card-review">{item.review}</p> : null}
-                  <div className="tags">
-                    {item.tags.map((tag) => (
-                      <span key={tag}>{tag}</span>
+              <label className="form-field" htmlFor="add-category">
+                Category *
+                <select
+                  id="add-category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleFormChange}
+                  required
+                >
+                  {categories
+                    .filter((category) => category.id !== 'all')
+                    .map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.label}
+                      </option>
                     ))}
-                  </div>
-                </article>
-              ))}
+                </select>
+              </label>
+
+              <label className="form-field" htmlFor="add-location">
+                Location *
+                <input
+                  id="add-location"
+                  name="location"
+                  type="text"
+                  value={formData.location}
+                  onChange={handleFormChange}
+                  placeholder="City, ST"
+                  required
+                />
+              </label>
+
+              <label className="form-field" htmlFor="add-rating">
+                Rating (1.0 to 5.0) *
+                <input
+                  id="add-rating"
+                  name="rating"
+                  type="number"
+                  min="1"
+                  max="5"
+                  step="0.1"
+                  value={formData.rating}
+                  onChange={handleFormChange}
+                  placeholder="4.5"
+                  required
+                />
+              </label>
+
+              <label className="form-field form-field-wide" htmlFor="add-review">
+                Short review / description *
+                <textarea
+                  id="add-review"
+                  name="review"
+                  value={formData.review}
+                  onChange={handleFormChange}
+                  placeholder="Share a short summary of the experience"
+                  rows={4}
+                  required
+                />
+              </label>
+
+              <label className="form-field form-field-wide" htmlFor="add-tags">
+                Tags (optional, comma separated)
+                <input
+                  id="add-tags"
+                  name="tags"
+                  type="text"
+                  value={formData.tags}
+                  onChange={handleFormChange}
+                  placeholder="Friendly service, Outdoor seating"
+                />
+              </label>
+
+              {errorMessage ? <p className="status-message status-error">{errorMessage}</p> : null}
+
+              <div className="form-actions">
+                <button type="submit" className="primary-btn">
+                  Save Entry
+                </button>
+                <button type="button" className="tab-btn" onClick={handleOpenListings}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {activeView === 'about' && (
+          <section className="panel about-panel">
+            <div className="results-head">
+              <h2>About</h2>
+              <span className="results-count">Project info &amp; roadmap</span>
+            </div>
+
+            <div className="split">
+              <article className="detail-block">
+                <h3>Dummy data sources</h3>
+                <ul>
+                  <li>local_listings_seed.json</li>
+                  <li>review_activity_snapshot.csv</li>
+                  <li>category_rankings_demo.parquet</li>
+                </ul>
+              </article>
+              <article className="detail-block">
+                <h3>AWS backend roadmap</h3>
+                <ul>
+                  <li>API Gateway + Lambda query endpoints</li>
+                  <li>DynamoDB for listings and review aggregates</li>
+                  <li>OpenSearch for text search and ranking</li>
+                  <li>S3 + EventBridge for data ingestion pipelines</li>
+                </ul>
+              </article>
             </div>
           </section>
-        </>
-      ) : (
-        <section className="panel add-new-panel">
-          <div className="results-head">
-            <h2>Add Entry</h2>
-            <span className="results-count">Create business/review entry</span>
-          </div>
-
-          <form className="add-form" onSubmit={handleSubmit} noValidate>
-            <label className="form-field" htmlFor="add-name">
-              Name *
-              <input
-                id="add-name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleFormChange}
-                placeholder="Business name"
-                required
-              />
-            </label>
-
-            <label className="form-field" htmlFor="add-category">
-              Category *
-              <select
-                id="add-category"
-                name="category"
-                value={formData.category}
-                onChange={handleFormChange}
-                required
-              >
-                {categories
-                  .filter((category) => category.id !== 'all')
-                  .map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.label}
-                    </option>
-                  ))}
-              </select>
-            </label>
-
-            <label className="form-field" htmlFor="add-location">
-              Location *
-              <input
-                id="add-location"
-                name="location"
-                type="text"
-                value={formData.location}
-                onChange={handleFormChange}
-                placeholder="City, ST"
-                required
-              />
-            </label>
-
-            <label className="form-field" htmlFor="add-rating">
-              Rating (1.0 to 5.0) *
-              <input
-                id="add-rating"
-                name="rating"
-                type="number"
-                min="1"
-                max="5"
-                step="0.1"
-                value={formData.rating}
-                onChange={handleFormChange}
-                placeholder="4.5"
-                required
-              />
-            </label>
-
-            <label className="form-field form-field-wide" htmlFor="add-review">
-              Short review / description *
-              <textarea
-                id="add-review"
-                name="review"
-                value={formData.review}
-                onChange={handleFormChange}
-                placeholder="Share a short summary of the experience"
-                rows={4}
-                required
-              />
-            </label>
-
-            <label className="form-field form-field-wide" htmlFor="add-tags">
-              Tags (optional, comma separated)
-              <input
-                id="add-tags"
-                name="tags"
-                type="text"
-                value={formData.tags}
-                onChange={handleFormChange}
-                placeholder="Friendly service, Outdoor seating"
-              />
-            </label>
-
-            {errorMessage ? <p className="status-message status-error">{errorMessage}</p> : null}
-
-            <div className="form-actions">
-              <button type="submit" className="primary-btn">
-                Save Entry
-              </button>
-              <button type="button" className="tab-btn" onClick={handleOpenListings}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      <section className="panel split">
-        <article className="detail-block">
-          <h3>Dummy data sources</h3>
-          <ul>
-            <li>local_listings_seed.json</li>
-            <li>review_activity_snapshot.csv</li>
-            <li>category_rankings_demo.parquet</li>
-          </ul>
-        </article>
-        <article className="detail-block">
-          <h3>AWS backend roadmap</h3>
-          <ul>
-            <li>API Gateway + Lambda query endpoints</li>
-            <li>DynamoDB for listings and review aggregates</li>
-            <li>OpenSearch for text search and ranking</li>
-            <li>S3 + EventBridge for data ingestion pipelines</li>
-          </ul>
-        </article>
-      </section>
+        )}
       </main>
     </div>
   )
