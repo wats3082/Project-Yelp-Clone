@@ -1,7 +1,10 @@
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   margin: 0;
-  padding: 18px 20px 28px;
+  padding: 18px 20px 0;
   color: #f8fafc;
   background:
     radial-gradient(circle at 8% -15%, rgba(251, 146, 60, 0.26) 0%, rgba(251, 146, 60, 0) 40%),
@@ -13,6 +16,28 @@
 .hero {
   max-width: 1040px;
   margin: 0 auto 10px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.scroll-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 24px;
+}
+
+.scroll-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scroll-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-content::-webkit-scrollbar-thumb {
+  background: rgba(251, 146, 60, 0.35);
+  border-radius: 3px;
 }
 
 .hero-badge {
@@ -457,7 +482,14 @@ li + li {
 
 @media (max-width: 760px) {
   .app-shell {
-    padding: 20px 14px 32px;
+    height: auto;
+    overflow: visible;
+    padding: 20px 14px 0;
+  }
+
+  .scroll-content {
+    overflow-y: visible;
+    padding-bottom: 32px;
   }
 
   .controls-panel {

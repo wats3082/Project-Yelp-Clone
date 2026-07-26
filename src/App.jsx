@@ -224,6 +224,7 @@ function App() {
         </nav>
       </header>
 
+      <main className="scroll-content">
       {activeView === 'listings' ? (
         <>
           <section className="panel controls-panel">
@@ -412,6 +413,7 @@ function App() {
           </ul>
         </article>
       </section>
+      </main>
     </div>
   )
 }
