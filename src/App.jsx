@@ -219,7 +219,7 @@ function App() {
             className={`view-btn ${activeView === 'add-new' ? 'active' : ''}`}
             onClick={handleOpenAddView}
           >
-            Add New
+            Add Entry
           </button>
         </nav>
       </header>
@@ -288,7 +288,7 @@ function App() {
       ) : (
         <section className="panel add-new-panel">
           <div className="results-head">
-            <h2>Add New</h2>
+            <h2>Add Entry</h2>
             <span className="results-count">Create business/review entry</span>
           </div>
 
