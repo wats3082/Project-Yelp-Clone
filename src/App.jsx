@@ -168,8 +168,8 @@ function App() {
                 <h3>{item.name}</h3>
                 <span className="price">{item.price}</span>
               </div>
-              <p className="meta">{item.location}</p>
-              <p className="meta">
+              <p className="meta meta-location">{item.location}</p>
+              <p className="meta meta-rating">
                 <strong>{item.rating}</strong> stars · {item.reviews.toLocaleString()} reviews
               </p>
               <div className="tags">
