@@ -14,8 +14,7 @@
 }
 
 .hero {
-  max-width: 1040px;
-  margin: 0 auto 8px;
+  margin: 0 0 8px;
   flex-shrink: 0;
   width: 100%;
 }
@@ -126,8 +125,7 @@
 .panel {
   position: relative;
   overflow: hidden;
-  max-width: 1040px;
-  margin: 0 auto 8px;
+  margin: 0 0 8px;
   border: 1px solid rgba(251, 146, 60, 0.24);
   border-radius: 12px;
   padding: 9px 14px;
