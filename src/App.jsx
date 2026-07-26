@@ -13,6 +13,7 @@ function App() {
         <p className="eyebrow">React demo</p>
         <h1>Movie Review Database</h1>
         <p>Dummy review catalog with summary metrics and an AWS-ready architecture path.</p>
+        <p className="standard-note">Project standard UI shell</p>
       </header>
 
       <section className="panel">
