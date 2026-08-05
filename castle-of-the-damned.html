@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Castle of the Damned</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&display=swap');
+
+:root{
+  --stone-dark:#15131a;
+  --stone:#2a2530;
+  --stone-light:#4a4152;
+  --blood:#8a1f2b;
+  --gold:#c9a24b;
+  --mist:#6f7a8c;
+  --bone:#e8e0cf;
+}
+
+*{box-sizing:border-box; -webkit-user-select:none; user-select:none;}
+html,body{margin:0;padding:0;height:100%;background:#000;font-family:'Cinzel',serif;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#wrap{position:relative;width:960px;max-width:100vw;aspect-ratio:960/540;box-shadow:0 0 0 2px var(--gold),0 0 40px 10px rgba(0,0,0,.9),inset 0 0 80px rgba(0,0,0,.6);background:#000;}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated;background:#000;}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--bone);background:radial-gradient(ellipse at center, rgba(20,15,25,.55) 0%, rgba(5,4,8,.92) 75%);gap:14px;padding:20px;}
+.hidden{display:none !important;}
+.title{font-family:'Cinzel Decorative',serif;font-weight:900;font-size:clamp(28px,5.5vw,54px);color:var(--blood);letter-spacing:3px;text-shadow:0 0 12px rgba(138,31,43,.9),0 0 30px rgba(138,31,43,.5),2px 2px 0 #000;margin:0;}
+.subtitle{font-size:clamp(11px,2vw,15px);letter-spacing:6px;color:var(--gold);text-transform:uppercase;margin:0 0 10px;opacity:.9;}
+.hint{font-size:13px;color:var(--mist);letter-spacing:1px;margin-top:6px;line-height:1.9;}
+.hint b{color:var(--gold);font-weight:600;}
+.blink{animation:blink 1.3s steps(1) infinite;color:var(--gold);font-size:15px;letter-spacing:2px;margin-top:10px;}
+@keyframes blink{50%{opacity:0;}}
+.crossOrn{width:26px;height:26px;opacity:.85;margin-bottom:6px;filter:drop-shadow(0 0 6px var(--blood));}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;font-family:'Cinzel',serif;color:var(--bone);pointer-events:none;text-shadow:1px 1px 2px #000,0 0 4px #000;z-index:5;}
+.hudBlock{display:flex;flex-direction:column;gap:4px;}
+.hudLabel{font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;}
+#hearts{display:flex;gap:3px;flex-wrap:wrap;max-width:180px;}
+.heartUnit{width:9px;height:16px;background:var(--stone-light);border:1px solid #000;position:relative;}
+.heartUnit.full{background:var(--blood);box-shadow:0 0 4px var(--blood);}
+#score,#hearts-count,#lives{font-size:14px;letter-spacing:1px;}
+#msgBanner{position:absolute;left:50%;top:14%;transform:translate(-50%,-50%);font-family:'Cinzel Decorative',serif;font-size:20px;color:var(--gold);text-shadow:0 0 10px rgba(0,0,0,.9),0 0 18px var(--blood);letter-spacing:3px;text-align:center;opacity:0;pointer-events:none;z-index:6;transition:opacity .4s;}
+button.stoneBtn{font-family:'Cinzel',serif;background:linear-gradient(180deg,var(--stone-light),var(--stone) 60%,var(--stone-dark));border:1px solid var(--gold);color:var(--bone);padding:10px 26px;font-size:14px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 3px 8px rgba(0,0,0,.6);}
+button.stoneBtn:hover{background:linear-gradient(180deg,var(--stone-light),var(--blood) 140%);}button.stoneBtn:active{transform:translateY(1px);}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="960" height="540"></canvas>
+  <div id="hud">
+    <div class="hudBlock"><div class="hudLabel">Vitae</div><div id="hearts"></div></div>
+    <div class="hudBlock" style="align-items:center;"><div class="hudLabel">Score</div><div id="score">000000</div></div>
+    <div class="hudBlock" style="align-items:flex-end;"><div class="hudLabel">Hearts</div><div id="hearts-count">00</div><div class="hudLabel" style="margin-top:6px;">Lives</div><div id="lives">03</div></div>
+  </div>
+  <div id="msgBanner"></div>
+  <div class="overlay" id="titleScreen">
+    <svg class="crossOrn" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 9h16" stroke="#8a1f2b" stroke-width="2"/></svg>
+    <div class="subtitle">A Gothic Adventure</div>
+    <h1 class="title">CASTLE OF<br/>THE DAMNED</h1>
+    <div class="hint"><b>◀ ▶</b> or <b>A / D</b> — Move &nbsp;&nbsp; <b>SPACE</b> — Jump<br/><b>X</b> — Crack the Whip &nbsp;&nbsp; Strike candles for hearts &amp; treasure</div>
+    <div class="blink">— PRESS ENTER TO BEGIN —</div>
+  </div>
+  <div class="overlay hidden" id="deathScreen"><h1 class="title" style="font-size:38px;">THY VITAE<br/>HAS EXPIRED</h1><div class="hint" id="deathHint">The night is not yet won...</div><button class="stoneBtn" id="retryBtn">Rise Again</button></div>
+  <div class="overlay hidden" id="winScreen"><div class="subtitle">The Castle Falls</div><h1 class="title" style="font-size:34px;">THE NIGHT<br/>IS BROKEN</h1><div class="hint">Final Score: <span id="finalScore">0</span><br/>The damned are sealed once more.</div><button class="stoneBtn" id="againBtn">Play Again</button></div>
+</div>
+<script>
+(()=>{
+'use strict'
+const cvs=document.getElementById('game'),ctx=cvs.getContext('2d'),W=cvs.width,H=cvs.height,GROUND_Y=460,GRAVITY=.62,LEVEL_W=4200
+const keys={}
+addEventListener('keydown',e=>{keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Enter'&&state==='title')startGame();if(e.code==='Enter'&&state==='dead')retry();if(e.code==='Enter'&&state==='win')retry()})
+addEventListener('keyup',e=>{keys[e.code]=false})
+const makeLevel=(name,len,gate,candles,enemies,spawn,mood,boss)=>({name,len,gate,candles,enemies,spawn,mood,boss})
+const levels=[
+ makeLevel('I','Entrance Hall',4200,[[300,390,'heart'],[560,320,'gem'],[940,300,'heart'],[1360,390,'gem'],[1660,260,'heart'],[1900,390,'gem'],[2220,240,'heart'],[2420,160,'gem'],[2760,390,'heart'],[3240,300,'gem'],[3640,300,'heart'],[3860,220,'gem']],[['bat',560,220],['zombie',780,730,980],['bat',1150,180],['zombie',1450,1400,1600],['bat',1750,260],['zombie',1980,1900,2150],['bat',2260,200],['zombie',2450,2380,2600],['bat',2900,300],['zombie',3150,3080,3300],['bat',3500,220],['zombie',3750,3650,3950]],[80,412],'Threshold of the Castle',null),
+ makeLevel('II','Catacombs',4700,[[260,390,'heart'],[520,300,'gem'],[880,240,'heart'],[1180,360,'gem'],[1540,280,'heart'],[1860,220,'gem'],[2160,390,'heart'],[2520,300,'gem'],[2860,240,'heart'],[3240,320,'gem'],[3580,200,'heart'],[3980,300,'gem'],[4380,260,'heart']],[['zombie',620,560,760],['bat',980,210],['zombie',1320,1240,1460],['bat',1620,260],['zombie',1940,1840,2080],['bat',2280,190],['zombie',2700,2600,2880],['bat',3100,230],['zombie',3440,3340,3700],['bat',3900,270],['zombie',4300,4200,4480]],[90,412],'Deeper Below',null),
+ makeLevel('III','Throne Approach',5200,[[280,390,'heart'],[680,300,'gem'],[1040,220,'heart'],[1420,330,'gem'],[1760,260,'heart'],[2140,180,'gem'],[2500,390,'heart'],[2880,300,'gem'],[3260,220,'heart'],[3680,340,'gem'],[4100,260,'heart'],[4520,200,'gem'],[4940,260,'heart']],[['bat',760,180],['zombie',1160,1080,1320],['bat',1560,220],['zombie',1980,1880,2220],['bat',2380,170],['zombie',2800,2700,3020],['bat',3300,240],['zombie',3720,3600,3880],['bat',4180,200],['zombie',4600,4480,4860],['bat',4980,260]],[100,412],'The Throne Looms',null),
+ makeLevel('BOSS','Crypt of the Warden',5600,[[320,390,'heart'],[860,300,'gem'],[1380,240,'heart'],[1880,320,'gem'],[2380,260,'heart'],[2920,200,'gem'],[3440,390,'heart'],[4020,300,'gem'],[4620,220,'heart'],[5120,260,'gem']],[['bat',820,210],['zombie',1280,1180,1480],['bat',1780,230],['zombie',2280,2180,2560],['bat',2920,180],['zombie',3460,3300,3720],['bat',4120,240],['zombie',4680,4560,4920]],[100,412],'The Warden Awakes',{x:5100,y:318,w:82,h:122,hp:24,phase:1,awake:false}] )
+let state='title',levelIndex=0,camX=0,frame=0,score=0,heartsCollected=0,lives=3,msgTimer=0,pickups=[],particles=[]
+const player={x:80,y:412,w:22,h:48,vx:0,vy:0,onGround:false,facing:1,hp:16,maxHp:16,invuln:0,whipping:0,walkFrame:0,walkTimer:0,hurtKnock:0,spawnX:80,spawnY:412}
+let level=mkLevel(0)
+function mkLevel(i){const l=levels[i];return{...l,gate:l.len-220,candles:l.candles.map(([x,y,item])=>({x,y,alive:true,item})),enemies:l.enemies.map(e=>e[0]==='bat'?makeBat(e[1],e[2]):makeZombie(e[1],e[2],e[3])),boss:l.boss?{...l.boss}:null}}
+function makeBat(x,y){return{type:'bat',x,y,baseY:y,t:Math.random()*10,alive:true,vx:-1.4,hp:2,hitFlash:0}}
+function makeZombie(x,left,right){return{type:'zombie',x,y:GROUND_Y-40,w:22,h:40,left,right,alive:true,vx:.6,hp:4,hitFlash:0}}
+function isOverGround(x){return x>=0&&x<=level.len}
+function rectsOverlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function showMsg(t,d){const el=document.getElementById('msgBanner');el.textContent=t;el.style.opacity=1;msgTimer=d||90}
+function addScore(n){score+=n;document.getElementById('score').textContent=String(score).padStart(6,'0')}
+function nextLabel(){return levels[levelIndex+1]?.name||'END'}
+function resetLevel(){level=mkLevel(levelIndex);camX=0;player.x=level.spawn[0];player.y=level.spawn[1]-player.h;player.spawnX=player.x;player.spawnY=player.y;player.vx=0;player.vy=0;player.hp=player.maxHp;player.invuln=0;player.whipping=0;player.hurtKnock=0;pickups=[];particles=[]}
+function startGame(){document.getElementById('titleScreen').classList.add('hidden');document.getElementById('deathScreen').classList.add('hidden');document.getElementById('winScreen').classList.add('hidden');levelIndex=0;score=0;heartsCollected=0;lives=3;document.getElementById('hearts-count').textContent='00';document.getElementById('lives').textContent='03';document.getElementById('score').textContent='000000';resetLevel();state='play';showMsg(`STAGE ${level.name} — ${level.mood}`,140)}
+function retry(){document.getElementById('deathScreen').classList.add('hidden');document.getElementById('winScreen').classList.add('hidden');document.getElementById('titleScreen').classList.remove('hidden');state='title'}
+function loseLife(){lives--;document.getElementById('lives').textContent=String(lives).padStart(2,'0');if(lives<=0)return gameOver();player.hp=player.maxHp;player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0;player.invuln=100;showMsg('THE NIGHT CONTINUES...',80)}
+function gameOver(){state='dead';document.getElementById('deathHint').textContent='The castle has claimed another soul.';document.getElementById('deathScreen').classList.remove('hidden')}
+function winGame(){state='win';document.getElementById('finalScore').textContent=String(score).padStart(6,'0');document.getElementById('winScreen').classList.remove('hidden')}
+function advanceLevel(){if(levelIndex>=levels.length-1)return winGame();levelIndex++;resetLevel();showMsg(`STAGE ${levels[levelIndex].name} — ${levels[levelIndex].mood}`,140)}
+function whipHitbox(){const range=46,x=player.facing===1?player.x+player.w:player.x-range;return{x,y:player.y+10,w:range,h:16}}
+function spawnBurst(x,y,color){for(let i=0;i<6;i++)particles.push({x,y,vx:(Math.random()-.5)*4,vy:(Math.random()-1.2)*3,life:22,color})}
+function damagePlayer(amount,silent){if(player.invuln>0)return;player.hp-=amount;player.invuln=70;player.hurtKnock=14;player.vx=-player.facing*4;player.vy=-5;if(!silent)spawnBurst(player.x+player.w/2,player.y+player.h/2,'#8a1f2b');if(player.hp<=0)loseLife()}
+function doWhipHit(){const hb=whipHitbox();for(const c of level.candles){if(!c.alive)continue;const cb={x:c.x-8,y:c.y-14,w:16,h:24};if(rectsOverlap(hb,cb)){c.alive=false;spawnBurst(c.x,c.y,'#c9a24b');pickups.push({x:c.x,y:c.y,vy:-4,type:c.item,life:240});addScore(50)}}for(const en of level.enemies){if(!en.alive)continue;const eb={x:en.x-(en.w||16)/2,y:en.y-(en.h||16)/2,w:en.w||16,h:en.h||16};if(rectsOverlap(hb,eb)){en.hp--;en.hitFlash=8;spawnBurst(en.x,en.y,'#8a1f2b');if(en.hp<=0){en.alive=false;addScore(en.type==='bat'?100:200);if(Math.random()<.4)pickups.push({x:en.x,y:en.y,vy:-3,type:'heart',life:240})}}}if(level.boss&&level.boss.awake&&level.boss.hp>0){const b=level.boss,eb={x:b.x,y:b.y,w:b.w,h:b.h};if(rectsOverlap(hb,eb)){b.hp--;b.phase=b.hp<12?2:1;spawnBurst(b.x+b.w/2,b.y+b.h/2,'#c9a24b');addScore(120);if(b.hp<=0){b.awake=false;showMsg('THE WARDEN FALLS!',120);addScore(1000);setTimeout(advanceLevel,900)}}}}
+function updatePlayer(){if(player.hurtKnock>0)player.hurtKnock--;else{let m=0;if(keys['ArrowLeft']||keys['KeyA'])m=-1;if(keys['ArrowRight']||keys['KeyD'])m=1;if(m!==0)player.facing=m;player.vx=m*(player.whipping>0?1:3.1)}if((keys['Space']||keys['ArrowUp']||keys['KeyW'])&&player.onGround&&player.hurtKnock<=0){player.vy=-12.2;player.onGround=false}if((keys['KeyX']||keys['KeyJ'])&&player.whipping<=0&&player.hurtKnock<=0){player.whipping=22;doWhipHit()}if(player.whipping>0)player.whipping--;player.vy+=GRAVITY;if(player.vy>16)player.vy=16;player.x+=player.vx;player.y+=player.vy;if(player.x<0)player.x=0;if(player.x>level.len-player.w)player.x=level.len-player.w;player.onGround=false;if(player.vy>=0){if(isOverGround(player.x+player.w/2)&&player.y+player.h>=GROUND_Y){player.y=GROUND_Y-player.h;player.vy=0;player.onGround=true}}if(player.y>H+100){damagePlayer(4,true);player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0}if(player.invuln>0)player.invuln--;if(Math.abs(player.vx)>0.1&&player.onGround){player.walkTimer++;if(player.walkTimer>7){player.walkTimer=0;player.walkFrame=(player.walkFrame+1)%4}}else player.walkFrame=0;const target=player.x-W*.38;camX+= (target-camX)*.12;camX=Math.max(0,Math.min(camX,level.len-W));if(level.boss&&!level.boss.awake&&player.x>level.boss.x-180){level.boss.awake=true;showMsg('THE WARDEN RISES!',120)}if(player.x>level.gate&&state==='play'&&!level.boss?.awake&&(!level.boss||level.boss.hp<=0))advanceLevel()}
+function updateEnemies(){for(const en of level.enemies){if(!en.alive)continue;if(en.hitFlash>0)en.hitFlash--;if(en.type==='bat'){en.t+=.06;en.x+=en.vx;en.y=en.baseY+Math.sin(en.t)*26;if(en.x<camX-100)en.vx=Math.abs(en.vx);if(en.x>camX+W+100)en.vx=-Math.abs(en.vx)}else{en.x+=en.vx;if(en.x<en.left){en.x=en.left;en.vx=Math.abs(en.vx)}if(en.x>en.right){en.x=en.right;en.vx=-Math.abs(en.vx)}}if(player.invuln<=0){const eb={x:en.x-(en.w||16)/2,y:en.y-(en.h||16)/2,w:en.w||16,h:en.h||16},pb={x:player.x,y:player.y,w:player.w,h:player.h};if(rectsOverlap(eb,pb))damagePlayer(en.type==='bat'?2:3)}}if(level.boss&&level.boss.awake&&level.boss.hp>0){const b=level.boss; b.x += Math.sin(frame*0.015)*(b.phase===2?1.1:.4); if(player.invuln<=0){const pb={x:player.x,y:player.y,w:player.w,h:player.h},bb={x:b.x,y:b.y,w:b.w,h:b.h}; if(rectsOverlap(bb,pb))damagePlayer(b.phase===2?4:3)}}}
+function updatePickups(){for(const p of pickups){p.y+=p.vy;p.vy+=.15;if(p.vy>0)p.vy=Math.min(p.vy,0);p.life--;const pb={x:p.x-8,y:p.y-8,w:16,h:16},pl={x:player.x,y:player.y,w:player.w,h:player.h};if(rectsOverlap(pb,pl)){p.life=0;if(p.type==='heart'){heartsCollected++;document.getElementById('hearts-count').textContent=String(heartsCollected).padStart(2,'0');if(player.hp<player.maxHp)player.hp=Math.min(player.maxHp,player.hp+2);addScore(20)}else addScore(150)}}pickups=pickups.filter(p=>p.life>0);for(const pt of particles){pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=.15;pt.life--}particles=particles.filter(p=>p.life>0)}
+function drawBackground(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0a0a14');g.addColorStop(.55,'#141220');g.addColorStop(1,'#1e1a26');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);const moonX=760-camX*.15;ctx.save();ctx.beginPath();ctx.arc(moonX,90,46,0,Math.PI*2);ctx.fillStyle='#e8e0cf';ctx.shadowColor='#e8e0cf';ctx.shadowBlur=40;ctx.fill();ctx.restore();ctx.fillStyle='rgba(20,18,28,.5)';ctx.beginPath();ctx.arc(moonX-14,80,40,0,Math.PI*2);ctx.fill();const fogOff=-((camX*.8)%W);ctx.globalAlpha=.18;ctx.fillStyle='#6f7a8c';for(let i=-1;i<3;i++){ctx.beginPath();ctx.ellipse(fogOff+i*W+W/2,H-90,W*.7,40,0,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1}
+function drawGround(){const x0=-camX;ctx.fillStyle='rgba(16,14,20,.95)';ctx.fillRect(x0,GROUND_Y,level.len,H-GROUND_Y);ctx.fillStyle='#5a4f5e';ctx.fillRect(x0,GROUND_Y,level.len,3);ctx.strokeStyle='rgba(0,0,0,.4)';for(let bx=0;bx<level.len;bx+=32){ctx.beginPath();ctx.moveTo(x0+bx,GROUND_Y);ctx.lineTo(x0+bx,H);ctx.stroke()}for(let by=GROUND_Y;by<H;by+=16){ctx.beginPath();ctx.moveTo(x0,by);ctx.lineTo(x0+level.len,by);ctx.stroke()}}
+function drawPlatforms(){for(let i=0;i<level.len;i+=1){if(i%1){} } }
+function drawCandle(c){const x=c.x-camX,y=c.y;if(x<-30||x>W+30)return;ctx.fillStyle='#3a3340';ctx.fillRect(x-3,y-6,6,20);if(c.alive){ctx.fillStyle='#e8e0cf';ctx.fillRect(x-2,y-16,4,14);const f=3+Math.sin(frame*.3+c.x)*1.5;ctx.fillStyle='#c9a24b';ctx.beginPath();ctx.moveTo(x,y-16-f);ctx.quadraticCurveTo(x+5,y-16-f/2,x,y-16+2);ctx.quadraticCurveTo(x-5,y-16-f/2,x,y-16-f);ctx.fill();ctx.save();ctx.globalAlpha=.5;ctx.shadowColor='#c9a24b';ctx.shadowBlur=14;ctx.fillStyle='#c9a24b';ctx.beginPath();ctx.arc(x,y-14,3,0,Math.PI*2);ctx.fill();ctx.restore()}else{ctx.fillStyle='#2a2530';ctx.fillRect(x-2,y-8,4,6)}}
+function drawBat(en){const x=en.x-camX,y=en.y;if(x<-30||x>W+30)return;ctx.save();ctx.translate(x,y);ctx.fillStyle=en.hitFlash>0?'#fff':'#1a1620';const f=Math.sin(frame*.4)*8;ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(-14,-8-f*.3,-16,2);ctx.quadraticCurveTo(-8,2,0,4);ctx.fill();ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(14,-8-f*.3,16,2);ctx.quadraticCurveTo(8,2,0,4);ctx.fill();ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a1f2b';ctx.fillRect(-2,-1,1.5,1.5);ctx.fillRect(1,-1,1.5,1.5);ctx.restore()}
+function drawZombie(en){const x=en.x-camX,y=en.y;if(x<-30||x>W+30)return;ctx.save();ctx.translate(x,y);ctx.fillStyle=en.hitFlash>0?'#fff':'#3d4a3a';ctx.fillRect(-9,-38,18,28);ctx.fillStyle=en.hitFlash>0?'#fff':'#5c6b55';ctx.fillRect(-6,-46,12,10);ctx.fillStyle=en.hitFlash>0?'#fff':'#3d4a3a';const a=Math.sin(frame*.15)*4;ctx.fillRect(-14,-34+a,6,16);ctx.fillRect(8,-34-a,6,16);const l=Math.sin(frame*.2)*3;ctx.fillStyle='#2a3327';ctx.fillRect(-7,-10,6,10+l);ctx.fillRect(1,-10,6,10-l);ctx.fillStyle='#c9a24b';ctx.fillRect(-3,-43,2,2);ctx.fillRect(2,-43,2,2);ctx.restore()}
+function drawBoss(){const b=level.boss;if(!b||!b.awake||b.hp<=0)return;const x=b.x-camX,y=b.y;if(x<-120||x>W+120)return;ctx.save();ctx.translate(x,y);ctx.fillStyle='#241f2c';ctx.beginPath();ctx.ellipse(b.w/2,b.h/2,b.w/2,b.h/2,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=b.phase===2?'#8a1f2b':'#4a4152';ctx.fillRect(10,18,62,72);ctx.fillRect(0,0,82,40);ctx.fillRect(18,88,48,22);ctx.fillStyle='#e8e0cf';ctx.fillRect(28,18,12,12);ctx.fillRect(48,18,12,12);ctx.fillStyle='#c9a24b';ctx.fillRect(35,42,12,18);ctx.fillStyle='#8a1f2b';ctx.fillRect(0,100,18,30);ctx.fillRect(64,100,18,30);ctx.fillRect(-12,34,24,10);ctx.fillRect(70,34,24,10);ctx.restore();ctx.fillStyle='rgba(10,8,12,.7)';ctx.fillRect(x-10,y-18,b.w+20,8);ctx.fillStyle='#8a1f2b';ctx.fillRect(x-10,y-18,(b.hp/24)*(b.w+20),8)}
+function drawPickup(p){const x=p.x-camX,y=p.y;if(x<-20||x>W+20)return;ctx.save();ctx.translate(x,y);if(p.type==='heart'){ctx.fillStyle='#8a1f2b';ctx.shadowColor='#8a1f2b';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(0,4);ctx.bezierCurveTo(-8,-4,-8,-10,0,-6);ctx.bezierCurveTo(8,-10,8,-4,0,4);ctx.fill()}else{ctx.fillStyle='#c9a24b';ctx.shadowColor='#c9a24b';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(6,-2);ctx.lineTo(3,6);ctx.lineTo(-3,6);ctx.lineTo(-6,-2);ctx.closePath();ctx.fill()}ctx.restore()}
+function drawParticles(){for(const p of particles){const x=p.x-camX,y=p.y;ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,p.life/22);ctx.fillRect(x-1.5,y-1.5,3,3)}ctx.globalAlpha=1}
+function drawPlayer(){const x=player.x-camX,y=player.y;ctx.save();if(player.invuln>0&&Math.floor(player.invuln/4)%2===0)ctx.globalAlpha=.4;ctx.translate(x+player.w/2,y+player.h/2);ctx.scale(player.facing,1);const bob=Math.abs(player.vx)>.1&&player.onGround?Math.sin(player.walkFrame*1.6)*2:0;ctx.fillStyle='#5a1420';ctx.beginPath();ctx.moveTo(-6,-16);ctx.quadraticCurveTo(-16+bob,-4,-14+bob,20);ctx.quadraticCurveTo(-6,22,-4,10);ctx.fill();ctx.fillStyle='#2a2530';ctx.fillRect(-6,12,5,12-bob*.3);ctx.fillRect(2,12,5,12+bob*.3);ctx.fillStyle='#4a4152';ctx.fillRect(-7,-14,14,26);ctx.fillStyle='#c9a24b';ctx.fillRect(-7,8,14,3);ctx.fillStyle='#e8c9a8';ctx.fillRect(-5,-24,10,10);ctx.fillStyle='#241f1a';ctx.fillRect(-6,-26,12,5);if(player.whipping>0){const prog=1-player.whipping/22,len=40*Math.sin(Math.min(prog*1.6,1)*Math.PI/2+.05)+6;ctx.strokeStyle='#c9a24b';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(9,-2);for(let i=0;i<=6;i++){const t=i/6;ctx.lineTo(9+len*t,-2+Math.sin(t*8+frame*.5)*3*(1-t))}ctx.stroke()}else{ctx.fillStyle='#4a4152';ctx.fillRect(6,-8,8,6)}ctx.restore();ctx.globalAlpha=1}
+function drawHUD(){const c=document.getElementById('hearts');c.innerHTML='';for(let i=0;i<player.maxHp;i++){const d=document.createElement('div');d.className='heartUnit'+(i<player.hp?' full':'');c.appendChild(d)}}
+function loop(){frame++;if(state==='play'){updatePlayer();updateEnemies();updatePickups();if(msgTimer>0&&--msgTimer<=0)document.getElementById('msgBanner').style.opacity=0}drawBackground();drawGround();for(const c of level.candles)drawCandle(c);for(const p of pickups)drawPickup(p);for(const en of level.enemies)if(en.alive){if(en.type==='bat')drawBat(en);else drawZombie(en)}drawBoss();drawParticles();if(state!=='title')drawPlayer();if(state==='play')drawHUD();requestAnimationFrame(loop)}
+addEventListener('resize',()=>{})
+document.getElementById('retryBtn').addEventListener('click',retry);document.getElementById('againBtn').addEventListener('click',retry);cvs.addEventListener('click',()=>{if(state==='title')startGame()});requestAnimationFrame(loop)
+})()
+</script>
+</body>
+</html>

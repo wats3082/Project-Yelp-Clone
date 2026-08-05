@@ -1,28 +1,20 @@
-# Project Yelp Clone
+# Castle of the Damned
 
-Yelp-style local discovery frontend built with React + Vite and dummy listing data.
+Playable gothic platformer with 3 stages and one boss, built for GitHub Pages.
 
-## Live site
+## Play
 
-https://wats3082.github.io/Project-Yelp-Clone/
+Open `castle-of-the-damned.html` directly or deploy the built site from `dist/`.
 
-## Scope
-
-- Category browsing for restaurants, movies, shops, and schools
-- Search by name, location, and tags
-- Ratings/review-count cards with standard portfolio UI shell
-- AWS-ready architecture direction
-
-## AWS backend direction
-
-1. API Gateway + Lambda listing/review APIs
-2. DynamoDB for listings and review aggregates
-3. OpenSearch for full-text discovery and ranking
-4. S3 + EventBridge for ingestion and updates
-
-## Local run
+## Build
 
 ```bash
 npm install
-npm run dev
+npm run build
 ```
+
+## Deploy target
+
+GitHub Pages base path:
+
+`/Game_CastleoftheDamned/`
